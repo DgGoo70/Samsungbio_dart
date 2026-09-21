@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Samsung Electronics | DART Financial Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body{font-family:Inter,Arial,sans-serif;margin:0;background:#0b1020;color:#e8edf7}
+.container{max-width:1200px;margin:auto;padding:36px 20px}
+header{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:28px}
+h1{margin:0;font-size:32px} .muted{color:#9ca8bf}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.card{background:#151d31;border:1px solid #27324b;border-radius:16px;padding:20px}
+.kpi{font-size:26px;font-weight:700;margin-top:8px}
+.section{margin-top:26px}.chart{height:330px}
+table{width:100%;border-collapse:collapse;background:#151d31;border-radius:14px;overflow:hidden}
+th,td{padding:11px;border-bottom:1px solid #27324b;text-align:right} th:first-child,td:first-child{text-align:left}
+.badge{padding:5px 9px;border-radius:999px;background:#22304e}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.grid{grid-template-columns:1fr}header{display:block}}
+</style>
+</head>
+<body>
+<div class="container">
+<header><div><div class="muted">DART · OpenDART · CFS</div><h1>삼성전자 재무 대시보드</h1></div><div class="muted" id="updated"></div></header>
+<div class="grid" id="kpis"></div>
+<div class="section card chart"><canvas id="profitChart"></canvas></div>
+<div class="section card chart"><canvas id="cashChart"></canvas></div>
+<div class="section">
+<h2>연도별 주요 재무수치</h2>
+<table><thead><tr><th>연도</th><th>매출</th><th>영업이익</th><th>순이익</th><th>CFO</th><th>FCF</th><th>ROE</th><th>부채비율</th></tr></thead><tbody id="rows"></tbody></table>
+</div>
+</div>
+<script>
+const fmt=(x)=>x==null||x==="NaN"?"-":new Intl.NumberFormat("ko-KR",{maximumFractionDigits:1}).format(Number(x)/1e8)+"억원";
+const pct=(x)=>x==null||x==="NaN"?"-":(Number(x)*100).toFixed(1)+"%";
+const ratio=(x)=>x==null||x==="NaN"?"-":Number(x).toFixed(2)+"x";
+fetch("data.json").then(r=>r.json()).then(d=>{
+ document.getElementById("updated").textContent="업데이트: "+d.updated_at;
+ const a=d.annual;
+ const latest=d.latest;
+ const k=[
+ ["매출액",fmt(latest.revenue)],["영업이익",fmt(latest.operating_income)],
+ ["영업이익률",pct(latest.operating_margin)],["당기순이익",fmt(latest.net_income)],
+ ["영업현금흐름",fmt(latest.cfo)],["FCF",fmt(latest.fcf)],
+ ["ROE",pct(latest.roe)],["부채비율",pct(latest.debt_to_equity)]
+ ];
+ document.getElementById("kpis").innerHTML=k.map(x=>`<div class="card"><div class="muted">${x[0]}</div><div class="kpi">${x[1]}</div></div>`).join("");
+ const years=a.map(x=>x.year);
+ new Chart(document.getElementById("profitChart"),{type:"line",data:{labels:years,datasets:[
+  {label:"매출",data:a.map(x=>x.revenue/1e12),tension:.25},
+  {label:"영업이익",data:a.map(x=>x.operating_income/1e12),tension:.25},
+  {label:"순이익",data:a.map(x=>x.net_income/1e12),tension:.25}
+ ]},options:{responsive:true,maintainAspectRatio:false,plugins:{title:{display:true,text:"매출·이익 추이 (조원)"}}}});
+ new Chart(document.getElementById("cashChart"),{type:"bar",data:{labels:years,datasets:[
+  {label:"CFO",data:a.map(x=>x.cfo/1e12)}, {label:"FCF",data:a.map(x=>x.fcf/1e12)}
+ ]},options:{responsive:true,maintainAspectRatio:false,plugins:{title:{display:true,text:"현금흐름 추이 (조원)"}}}});
+ document.getElementById("rows").innerHTML=a.map(x=>`<tr>
+ <td>${x.year}</td><td>${fmt(x.revenue)}</td><td>${fmt(x.operating_income)}</td><td>${fmt(x.net_income)}</td>
+ <td>${fmt(x.cfo)}</td><td>${fmt(x.fcf)}</td><td>${pct(x.roe)}</td><td>${pct(x.debt_to_equity)}</td></tr>`).join("");
+});
+</script>
+</body>
+</html>

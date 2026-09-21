@@ -1,0 +1,13 @@
+{
+  "corp_name": "삼성전자",
+  "stock_code": "005930",
+  "corp_code": "",
+  "analysis_fs_div": "CFS",
+  "reports": [
+    "11011",
+    "11013",
+    "11012",
+    "11014"
+  ],
+  "keep_years": 6
+}
