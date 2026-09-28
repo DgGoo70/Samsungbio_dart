@@ -136,7 +136,7 @@ def normalize_report(rows, cfg, year, report_code):
     }
     for key in [
         "total_assets","cash","receivables","inventory","ppe","total_liabilities",
-        "equity","revenue","gross_profit","sga","operating_income","pretax_income",
+        "borrowings","equity","revenue","gross_profit","sga","operating_income","pretax_income",
         "net_income","controlling_net_income","cfo","cfi","cff","interest_expense",
         "depreciation","amortization"
     ]:
